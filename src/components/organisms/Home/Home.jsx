@@ -5,11 +5,11 @@ const Home = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const galleryImages = [
-    { src: "/src/assets/frente.png", alt: "Coro Adoradores en presentación" },
-    { src: "/src/assets/piano.png", alt: "Piano del coro" },
-    { src: "/src/assets/instrumentos.png", alt: "Instrumentos musicales" },
-    { src: "/src/assets/mixer.png", alt: "Mesa de mezclas" },
-    { src: "/src/assets/bocinas.png", alt: "Sistema de sonido" },
+    { src: "/images/frente.png", alt: "Coro Adoradores en presentación" },
+    { src: "/images/piano.png", alt: "Piano del coro" },
+    { src: "/images/instrumentos.png", alt: "Instrumentos musicales" },
+    { src: "/images/mixer.png", alt: "Mesa de mezclas" },
+    { src: "/images/bocinas.png", alt: "Sistema de sonido" },
   ];
 
   useEffect(() => {
@@ -78,25 +78,22 @@ const Home = () => {
           <h2>Nuestros Instrumentos</h2>
           <div className="instruments-grid">
             <div className="instrument-card">
-              <img src="/src/assets/piano.png" alt="Piano" />
+              <img src="/images/piano.png" alt="Piano" />
               <h3>Piano</h3>
               <p>El corazón melódico de nuestras alabanzas</p>
             </div>
             <div className="instrument-card">
-              <img
-                src="/src/assets/instrumentos.png"
-                alt="Instrumentos diversos"
-              />
+              <img src="/images/instrumentos.png" alt="Instrumentos diversos" />
               <h3>Instrumentos</h3>
               <p>Una variedad de instrumentos que enriquecen nuestra música</p>
             </div>
             <div className="instrument-card">
-              <img src="/src/assets/mixer.png" alt="Mesa de mezclas" />
+              <img src="/images/mixer.png" alt="Mesa de mezclas" />
               <h3>Producción</h3>
               <p>Tecnología profesional para el mejor sonido</p>
             </div>
             <div className="instrument-card">
-              <img src="/src/assets/bocinas.png" alt="Sistema de sonido" />
+              <img src="/images/bocinas.png" alt="Sistema de sonido" />
               <h3>Sonido</h3>
               <p>Sistema de audio de alta calidad</p>
             </div>
