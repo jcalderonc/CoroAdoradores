@@ -6,7 +6,6 @@ import { useState } from "react";
 function Header({ selectedPage, setSelectedPage }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-
   const handleNavigate = (page) => {
     setSelectedPage(page);
     setIsMenuOpen(false);
@@ -16,13 +15,12 @@ function Header({ selectedPage, setSelectedPage }) {
     setIsMenuOpen(!isMenuOpen);
   };
 
-
   // ✅ Función que renderiza los botones
   const renderMenuItems = (isMobile = false) => {
     return headerData.map((item, index) => (
       <li key={index} className={isMobile ? "w-full" : ""}>
         <MenuButton
-        key={item.id}
+          key={item.id}
           href={item.href}
           active={selectedPage === item.label}
           onNavigate={() => handleNavigate(item.label)}
@@ -35,21 +33,27 @@ function Header({ selectedPage, setSelectedPage }) {
   };
 
   return (
-    <header className="bg-slate-900 text-white shadow-lg border-b-4 border-orange-400">
+    <header
+      className="text-white shadow-lg border-b-4 border-yellow-600"
+      style={{
+        background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+      }}
+    >
       <div className="max-w-6xl mx-auto px-6 py-4">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
+          <div
+            className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => handleNavigate("Home")}
+          >
             <img
               src={logoCoro}
               alt="Logo Coro Adoradores San Rafael Arcángel"
-              className="h-12 w-12 rounded-full object-cover ring-2 ring-orange-400"
+              className="h-12 w-12 rounded-full object-cover ring-2 ring-yellow-600"
             />
             <div>
-              <h1 className="text-xl font-bold text-orange-50">
-                Coro Adoradores
-              </h1>
-              <p className="text-sm text-orange-200">San Rafael Arcángel</p>
+              <h1 className="text-xl font-bold text-white">Coro Adoradores</h1>
+              <p className="text-sm text-gray-200">San Rafael Arcángel</p>
             </div>
           </div>
 

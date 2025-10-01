@@ -1,20 +1,26 @@
 export const headerData = [
   {
-    id: 'scheduler',
-    href: '#scheduler',
-    label: 'Calendario',
-    requireAuth: true
+    id: "home",
+    href: "#home",
+    label: "Home",
+    requireAuth: false,
   },
   {
-    id: 'login',
-    href: '#login',
-    label: 'Login',
-    requireAuth: false
+    id: "scheduler",
+    href: "#scheduler",
+    label: "Calendario",
+    requireAuth: true,
   },
   {
-    id: 'register',
-    href: '#register',
-    label: 'Registro',
-    requireAuth: false
-  }
-]
+    id: "login",
+    href: "#login",
+    label: "Login",
+    requireAuth: false,
+  },
+  {
+    id: "register",
+    href: "#register",
+    label: "Registro",
+    requireAuth: false,
+  },
+];
