@@ -1,23 +1,29 @@
+import Button from '../Button/Button'
+
 export function MenuButton({
   children,
   href,
   active = false,
   onNavigate,
   className = "",
+  variant = "ghost",
+  size = "md"
 }) {
-  const baseClasses =
-    "px-4 py-2 rounded-md font-medium transition-all duration-500 block";
-  const activeClasses = "bg-orange-500 text-slate-900";
-  const inactiveClasses = "text-white bg-slate-950 hover:bg-orange-400";
+  const handleClick = (e) => {
+    e.preventDefault()
+    if (onNavigate) {
+      onNavigate()
+    }
+  }
+
   return (
-    <a
-      href={href}
-      onClick={onNavigate}
-      className={`${baseClasses} ${
-        active ? activeClasses : inactiveClasses
-      } ${className}`}
+    <Button
+      variant={active ? "primary" : variant}
+      size={size}
+      onClick={handleClick}
+      className={`${active ? 'shadow-lg' : ''} ${className}`}
     >
       {children}
-    </a>
-  );
+    </Button>
+  )
 }
