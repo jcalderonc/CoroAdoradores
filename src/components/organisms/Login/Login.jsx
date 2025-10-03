@@ -1,12 +1,22 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useAuth } from '../../../context/AuthContext'
+import { useToast } from '../../../context/ToastContext'
+import toastService from '../../../services/toastService'
+import Button from '../../atoms/Button/Button'
 
-function Login() {
+function Login({ onLoginSuccess }) {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   })
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
+  
+  const { login, isLoading } = useAuth()
+  const toast = useToast()
+
+  // Set up toast service
+  useEffect(() => {
+    toastService.setToastFunctions(toast)
+  }, [toast])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -18,23 +28,38 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setIsLoading(true)
-    setError('')
 
-    try {
-      // TODO: Conectar con tu API Lambda
-      console.log('Login data:', formData)
+    const result = await login(formData.email, formData.password)
+    
+    if (!result.success) {
+      // Check for specific error types and show appropriate toast
+      if (result.message.toLowerCase().includes('usuario') || 
+          result.message.toLowerCase().includes('user') ||
+          result.message.toLowerCase().includes('not found') ||
+          result.message.toLowerCase().includes('no encontrado') ||
+          result.message.toLowerCase().includes('does not exist') ||
+          result.message.toLowerCase().includes('no existe')) {
+        toastService.userNotFound()
+      } else if (result.message.toLowerCase().includes('password') ||
+                 result.message.toLowerCase().includes('contraseña') ||
+                 result.message.toLowerCase().includes('invalid') ||
+                 result.message.toLowerCase().includes('incorrect') ||
+                 result.message.toLowerCase().includes('wrong') ||
+                 result.message.toLowerCase().includes('credentials')) {
+        toastService.invalidCredentials()
+      } else {
+        toastService.loginError(result.message)
+      }
+    } else {
+      // Login successful - show success toast and redirect
+      toastService.loginSuccess(formData.email.split('@')[0])
       
-      // Simulación de API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Aquí manejarías la respuesta exitosa
-      console.log('Login exitoso')
-      
-    } catch (err) {
-      setError('Error al iniciar sesión. Verifica tus credenciales.')
-    } finally {
-      setIsLoading(false)
+      // Small delay to show success toast before redirect
+      setTimeout(() => {
+        if (onLoginSuccess) {
+          onLoginSuccess()
+        }
+      }, 2000)
     }
   }
 
@@ -83,21 +108,18 @@ function Login() {
             </div>
           </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {error}
-            </div>
-          )}
 
           {/* Submit Button */}
-          <button
+          <Button
             type="submit"
+            variant="primary"
+            size="md"
+            loading={isLoading}
             disabled={isLoading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full"
           >
             {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-          </button>
+          </Button>
 
           {/* Link to Register */}
           <div className="text-center">
