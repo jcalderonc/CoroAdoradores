@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Button from "../../atoms/Button/Button";
 import ButtonGroup from "../../atoms/ButtonGroup/ButtonGroup";
 import { openChoirWhatsApp } from "../../../utils/whatsapp";

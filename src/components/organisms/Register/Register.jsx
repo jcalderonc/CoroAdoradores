@@ -1,6 +1,9 @@
 import { useState } from "react";
+import toastService from "../../../services/toastService";
+import signupService from "../../../services/signupService";
+import Button from "../../atoms/Button/Button";
 
-function Register() {
+function Register({ onNavigate }) {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -8,7 +11,6 @@ function Register() {
     phone: "",
     password: "",
     confirmPassword: "",
-    acceptTerms: false,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -43,10 +45,6 @@ function Register() {
       return false;
     }
 
-    if (!formData.acceptTerms) {
-      setError("Debes aceptar los términos y condiciones");
-      return false;
-    }
 
     return true;
   };
@@ -58,28 +56,62 @@ function Register() {
     if (!validateForm()) return;
 
     setIsLoading(true);
+    console.log('🎯 Register Component: Iniciando proceso de registro...', formData);
 
     try {
-      // Preparar datos para MongoDB (sin confirmPassword)
+      // Preparar datos para la API
       const userData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         phone: formData.phone,
-        password: formData.password, // TODO: Hashear en backend
-        acceptTerms: formData.acceptTerms,
-        createdAt: new Date().toISOString(),
+        password: formData.password,
+        acceptTerms: true, // Siempre true ya que eliminamos el checkbox
       };
 
-      // TODO: Conectar con tu API Lambda
-      console.log("User data for MongoDB:", userData);
+      console.log('📤 Register Component: Llamando al signupService...', userData);
+      const { response, data } = await signupService.signup(userData);
 
-      // Simulación de API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      setSuccess(true);
+      if (data.success) {
+        setSuccess(true);
+        // Mostrar toast con el nombre del usuario registrado
+        const userName = data.data?.user?.firstName || 'Usuario';
+        toastService.registrationSuccess(userName);
+      } else {
+        // Manejar diferentes tipos de errores
+        if (data.message === "User with this email already exists") {
+          setError("Este correo electrónico ya está registrado. Por favor, usa otro correo o inicia sesión.");
+          toastService.userAlreadyExists();
+        } else {
+          setError(data.message || "Error al crear la cuenta. Inténtalo de nuevo.");
+          toastService.registrationError();
+        }
+      }
     } catch (err) {
-      setError("Error al crear la cuenta. Inténtalo de nuevo.");
+      console.error('❌ Register Component: Error en registro', {
+        name: err.name,
+        message: err.message,
+        stack: err.stack,
+        type: err.constructor.name
+      });
+
+      // Detectar diferentes tipos de errores
+      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        if (err.message.includes('CORS') || err.message.includes('access control')) {
+          setError("Error de configuración del servidor (CORS). Contacta al administrador.");
+          toastService.corsError();
+          console.error('🚨 Error CORS detectado - El servidor no permite peticiones desde este dominio');
+        } else {
+          setError("Error de conexión. Verifica tu internet e inténtalo de nuevo.");
+          toastService.networkError();
+        }
+      } else if (err.name === 'NetworkError') {
+        setError("Sin conexión a internet. Verifica tu conexión.");
+        toastService.networkError();
+      } else {
+        setError("Error inesperado. Inténtalo de nuevo.");
+        toastService.registrationError();
+      }
     } finally {
       setIsLoading(false);
     }
@@ -96,12 +128,12 @@ function Register() {
             <p className="mt-2">
               Ya puedes iniciar sesión con tu nueva cuenta.
             </p>
-            <a
-              href="#login"
+            <button
+              onClick={() => onNavigate && onNavigate("Login")}
               className="mt-4 inline-block bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600"
             >
               Ir a Iniciar Sesión
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -239,29 +271,6 @@ function Register() {
               />
             </div>
 
-            {/* Terms and Conditions */}
-            <div className="flex items-center">
-              <input
-                id="acceptTerms"
-                name="acceptTerms"
-                type="checkbox"
-                checked={formData.acceptTerms}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
-              />
-              <label
-                htmlFor="acceptTerms"
-                className="ml-2 block text-sm text-gray-900"
-              >
-                Acepto los{" "}
-                <a
-                  href="#terms"
-                  className="text-orange-600 hover:text-orange-500"
-                >
-                  términos y condiciones
-                </a>
-              </label>
-            </div>
           </div>
 
           {/* Error Message */}
@@ -272,24 +281,27 @@ function Register() {
           )}
 
           {/* Submit Button */}
-          <button
+          <Button
             type="submit"
+            variant="primary"
+            size="md"
+            loading={isLoading}
             disabled={isLoading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full"
           >
             {isLoading ? "Creando cuenta..." : "Crear Cuenta"}
-          </button>
+          </Button>
 
           {/* Link to Login */}
           <div className="text-center">
             <p className="text-sm text-gray-600">
               ¿Ya tienes cuenta?{" "}
-              <a
-                href="#login"
-                className="font-medium text-orange-600 hover:text-orange-500"
+              <button
+                onClick={() => onNavigate && onNavigate("Login")}
+                className="font-medium text-orange-600 hover:text-orange-500 bg-transparent border-none cursor-pointer"
               >
                 Inicia sesión aquí
-              </a>
+              </button>
             </p>
           </div>
         </form>

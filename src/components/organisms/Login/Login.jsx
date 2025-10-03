@@ -4,7 +4,7 @@ import { useToast } from '../../../context/ToastContext'
 import toastService from '../../../services/toastService'
 import Button from '../../atoms/Button/Button'
 
-function Login({ onLoginSuccess }) {
+function Login({ onLoginSuccess, onNavigate }) {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -125,9 +125,12 @@ function Login({ onLoginSuccess }) {
           <div className="text-center">
             <p className="text-sm text-gray-600">
               ¿No tienes cuenta?{' '}
-              <a href="#register" className="font-medium text-orange-600 hover:text-orange-500">
+              <button
+                onClick={() => onNavigate && onNavigate("Registro")}
+                className="font-medium text-orange-600 hover:text-orange-500 bg-transparent border-none cursor-pointer"
+              >
                 Regístrate aquí
-              </a>
+              </button>
             </p>
           </div>
         </form>
