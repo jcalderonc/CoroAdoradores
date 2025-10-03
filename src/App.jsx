@@ -7,23 +7,15 @@ import Register from "./components/organisms/Register/Register";
 import Profile from "./components/organisms/Profile/Profile";
 import Rehearsals from "./components/organisms/Rehearsals/Rehearsals";
 import MainLayout from "./components/templates/MainLayout/MainLayout";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
-import apiService from "./services/api";
 
 // Main App component that uses auth
 function AppContent() {
   const [selectedPage, setSelectedPage] = useState("Home");
-  const { isAuthenticated, isLoading, user, getAuthHeaders } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
-  // Set up API service with auth token getter
-  useEffect(() => {
-    apiService.setAuthTokenGetter(() => {
-      const token = localStorage.getItem('token');
-      return token;
-    });
-  }, []);
 
   return (
     <MainLayout>
@@ -35,11 +27,8 @@ function AppContent() {
             <p className="mt-4 text-gray-600">Cargando...</p>
           </div>
         </div>
-      ) : !isAuthenticated ? (
-        /* If not authenticated, show login page */
-        <Login onLoginSuccess={() => setSelectedPage("Calendario")} />
       ) : (
-        /* If authenticated, show the main app */
+        /* Show the main app for both authenticated and non-authenticated users */
         <>
           <Header 
             selectedPage={selectedPage} 
@@ -48,7 +37,7 @@ function AppContent() {
           />
           <main>
             {(selectedPage === "Home" || selectedPage === null) && <Home onNavigate={setSelectedPage} />}
-            {selectedPage === "Calendario" && (
+            {selectedPage === "Calendario" && isAuthenticated && (
               <div className="pt-8 px-6">
                 <div className="max-w-6xl mx-auto">
                   <Stats />
@@ -57,11 +46,21 @@ function AppContent() {
               </div>
             )}
             {selectedPage === "Ensayos" && <Rehearsals />}
-            {selectedPage === "Mi Perfil" && <Profile />}
-            {selectedPage === "Registro" && (
+            {selectedPage === "Mi Perfil" && isAuthenticated && <Profile />}
+            {selectedPage === "Login" && !isAuthenticated && (
               <div className="pt-8 px-6">
                 <div className="max-w-6xl mx-auto">
-                  <Register />
+                  <Login 
+                    onLoginSuccess={() => setSelectedPage("Calendario")} 
+                    onNavigate={setSelectedPage}
+                  />
+                </div>
+              </div>
+            )}
+            {selectedPage === "Registro" && !isAuthenticated && (
+              <div className="pt-8 px-6">
+                <div className="max-w-6xl mx-auto">
+                  <Register onNavigate={setSelectedPage} />
                 </div>
               </div>
             )}

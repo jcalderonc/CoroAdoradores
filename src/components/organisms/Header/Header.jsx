@@ -43,12 +43,13 @@ function Header({ selectedPage, setSelectedPage, user }) {
     return headerData.filter(item => {
       // Si el usuario está autenticado
       if (user) {
-        // Mostrar elementos que no requieren auth O que requieren auth
-        // Y que no se oculten cuando está autenticado
-        return (!item.requireAuth || item.requireAuth) && !item.hideWhenAuthenticated;
+        // Mostrar elementos que:
+        // 1. No requieren auth (Home, Ensayos) Y no se ocultan cuando está autenticado
+        // 2. Requieren auth (Calendario, Mi Perfil) Y no se ocultan cuando está autenticado
+        return !item.hideWhenAuthenticated;
       } else {
         // Si el usuario NO está autenticado
-        // Mostrar solo elementos que no requieren auth
+        // Mostrar elementos que no requieren auth (Home, Ensayos, Login, Register)
         return !item.requireAuth;
       }
     });
