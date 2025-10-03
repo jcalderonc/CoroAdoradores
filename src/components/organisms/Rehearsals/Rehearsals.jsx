@@ -1,4 +1,3 @@
-import React from 'react';
 import Button from '../../atoms/Button/Button';
 import ButtonGroup from '../../atoms/ButtonGroup/ButtonGroup';
 import { openChoirWhatsApp, openGoogleMaps } from '../../../utils/whatsapp';

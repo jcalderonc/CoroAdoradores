@@ -35,6 +35,27 @@ class ToastService {
     this.toast.info('Sesión cerrada correctamente.')
   }
 
+  // Registration related toasts
+  registrationSuccess = (userName = 'Usuario') => {
+    if (!this.toast) return
+    this.toast.success(`¡Bienvenido ${userName}! Tu cuenta ha sido creada exitosamente.`)
+  }
+
+  userAlreadyExists = () => {
+    if (!this.toast) return
+    this.toast.error('Este correo electrónico ya está registrado.')
+  }
+
+  registrationError = () => {
+    if (!this.toast) return
+    this.toast.error('Error al crear la cuenta. Inténtalo de nuevo.')
+  }
+
+  corsError = () => {
+    if (!this.toast) return
+    this.toast.error('Error de configuración del servidor. Contacta al administrador.')
+  }
+
   // API related toasts
   apiError = (message = 'Error en la conexión') => {
     if (!this.toast) return

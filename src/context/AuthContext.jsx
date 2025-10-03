@@ -1,4 +1,5 @@
 import { createContext, useContext, useReducer, useEffect } from 'react'
+import loginService from '../services/loginService'
 
 // Initial state
 const initialState = {
@@ -117,16 +118,7 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: AUTH_ACTIONS.LOGIN_START })
     
     try {
-      const response = await fetch('https://677e4m4847.execute-api.us-east-1.amazonaws.com/default/asAuth', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      })
-
-      // Parse the response data first
-      const data = await response.json()
+      const { response, data } = await loginService.login(email, password)
 
       if (data.success) {
         // Store in localStorage
@@ -169,24 +161,10 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: AUTH_ACTIONS.LOGOUT })
   }
 
-  // Get auth headers for API requests
-  const getAuthHeaders = () => {
-    if (state.token) {
-      return {
-        'Authorization': `Bearer ${state.token}`,
-        'Content-Type': 'application/json'
-      }
-    }
-    return {
-      'Content-Type': 'application/json'
-    }
-  }
-
   const value = {
     ...state,
     login,
-    logout,
-    getAuthHeaders
+    logout
   }
 
   return (
