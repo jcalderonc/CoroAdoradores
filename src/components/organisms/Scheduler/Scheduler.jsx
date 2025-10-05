@@ -27,8 +27,23 @@ const convertAppointmentsToEvents = (appointments) => {
   }
 
   return appointments.map((appointment) => {
-    const startDate = new Date(appointment.date)
+    // Parsear la fecha manteniendo la hora local (sin conversión de zona horaria)
+    const dateStr = appointment.date.replace('Z', '') // Remover Z para evitar conversión UTC
+    const startDate = new Date(dateStr)
     const endDate = new Date(startDate.getTime() + 60 * 60 * 1000)
+    
+    console.log('📅 Convirtiendo appointment:', {
+      originalDate: appointment.date,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      startHour: startDate.getHours(),
+      startMinute: startDate.getMinutes(),
+      startDay: startDate.getDate(),
+      startMonth: startDate.getMonth(),
+      startYear: startDate.getFullYear(),
+      title: appointment.comments,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    })
     
     return {
       id: appointment.id,
@@ -45,7 +60,8 @@ const convertAppointmentsToEvents = (appointments) => {
 }
 
 function Scheduler() {
-  const [currentDate, setCurrentDate] = useState(new Date())
+  // Inicializar en la semana del 7 de noviembre de 2025
+  const [currentDate, setCurrentDate] = useState(new Date(2025, 10, 7)) // Noviembre 7, 2025
   const [eventos, setEventos] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [weekSummary, setWeekSummary] = useState(null)
@@ -182,30 +198,50 @@ function Scheduler() {
         </div>
       ) : (
         <div className="h-[600px] bg-gray-50 rounded-lg p-4 border border-gray-200">
-          <Calendar
-            localizer={localizer}
-            events={eventos}
-            defaultView="week"
-            views={['week']}
-            step={30}
-            timeslots={2}
-            showMultiDayTimes
-            min={new Date(2025, 0, 1, 7, 0, 0)}
-            max={new Date(2025, 0, 1, 21, 0, 0)}
-            culture="es"
-            formats={formats}
-            messages={{
-              previous: 'Anterior',
-              next: 'Siguiente', 
-              today: 'Hoy'
-            }}
-            date={currentDate}
-            onNavigate={handleNavigate}
-            onSelectSlot={handleSelectSlot}
-            onSelectEvent={handleSelectEvent}
-            selectable
-            className="rounded-lg"
-          />
+          {(() => {
+            // Configurar min/max para las horas del día (7 AM - 9 PM)
+            const minTime = new Date(2025, 0, 1, 7, 0, 0)  // 7:00 AM
+            const maxTime = new Date(2025, 0, 1, 21, 0, 0) // 9:00 PM
+            
+            console.log('📅 Configuración del calendario:', {
+              currentDate: currentDate.toISOString(),
+              minTime: minTime.toISOString(),
+              maxTime: maxTime.toISOString(),
+              eventosCount: eventos.length,
+              eventos: eventos.map(e => ({
+                title: e.title,
+                start: e.start.toISOString(),
+                end: e.end.toISOString()
+              }))
+            })
+            
+            return (
+              <Calendar
+                localizer={localizer}
+                events={eventos}
+                defaultView="week"
+                views={['week']}
+                step={30}
+                timeslots={2}
+                showMultiDayTimes
+                min={minTime}
+                max={maxTime}
+                culture="es"
+                formats={formats}
+                messages={{
+                  previous: 'Anterior',
+                  next: 'Siguiente', 
+                  today: 'Hoy'
+                }}
+                date={currentDate}
+                onNavigate={handleNavigate}
+                onSelectSlot={handleSelectSlot}
+                onSelectEvent={handleSelectEvent}
+                selectable
+                className="rounded-lg"
+              />
+            )
+          })()}
         </div>
       )}
     </div>
