@@ -6,6 +6,10 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 import './Scheduler.css'
 import appointmentService from '../../../services/appointmentService'
 import { useAuth } from '../../../context/AuthContext'
+import { useToast } from '../../../context/ToastContext'
+import Button from '../../atoms/Button/Button'
+import NewAppointmentModal from './NewAppointmentModal'
+import AppointmentDetailsModal from './AppointmentDetailsModal'
 
 const localizer = dateFnsLocalizer({
   format,
@@ -20,6 +24,18 @@ const formats = {
   timeGutterFormat: 'h:mm a',
 }
 
+const getDefaultFormDate = () => new Date().toISOString().slice(0, 16)
+const initialFormState = {
+  email: '',
+  dateTime: getDefaultFormDate(),
+  type: 'xv_anos',
+  comments: '',
+  location: '',
+  status: 'Tentativo',
+  totalAmount: '',
+  balanceDue: '',
+}
+
 // Función para convertir appointments de la API al formato del calendario
 const convertAppointmentsToEvents = (appointments) => {
   if (!appointments || !Array.isArray(appointments)) {
@@ -27,23 +43,12 @@ const convertAppointmentsToEvents = (appointments) => {
   }
 
   return appointments.map((appointment) => {
-    // Parsear la fecha manteniendo la hora local (sin conversión de zona horaria)
-    const dateStr = appointment.date.replace('Z', '') // Remover Z para evitar conversión UTC
+    // Parsear la fecha como UTC (la API guarda en UTC). Así el calendario la muestra bien en hora local.
+    const dateStr = appointment.date.endsWith('Z') || /\+\d{2}:?\d{2}$/.test(appointment.date)
+      ? appointment.date
+      : appointment.date + 'Z'
     const startDate = new Date(dateStr)
     const endDate = new Date(startDate.getTime() + 60 * 60 * 1000)
-    
-    console.log('📅 Convirtiendo appointment:', {
-      originalDate: appointment.date,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-      startHour: startDate.getHours(),
-      startMinute: startDate.getMinutes(),
-      startDay: startDate.getDate(),
-      startMonth: startDate.getMonth(),
-      startYear: startDate.getFullYear(),
-      title: appointment.comments,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-    })
     
     return {
       id: appointment.id,
@@ -54,18 +59,27 @@ const convertAppointmentsToEvents = (appointments) => {
       type: appointment.type,
       comments: appointment.comments,
       location: appointment.location,
-      createdAt: appointment.createdAt
+      status: appointment.status ?? 'Tentativo',
+      totalAmount: typeof appointment.totalAmount === 'number' ? appointment.totalAmount : 0,
+      balanceDue: typeof appointment.balanceDue === 'number' ? appointment.balanceDue : 0,
+      createdAt: appointment.createdAt,
+      updatedAt: appointment.updatedAt,
     }
   })
 }
 
 function Scheduler() {
-  // Inicializar en la semana del 7 de noviembre de 2025
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 10, 7)) // Noviembre 7, 2025
+  // Inicializar en la semana actual
+  const [currentDate, setCurrentDate] = useState(() => new Date())
   const [eventos, setEventos] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [weekSummary, setWeekSummary] = useState(null)
+  const [showNewAppointmentModal, setShowNewAppointmentModal] = useState(false)
+  const [selectedEvent, setSelectedEvent] = useState(null)
+  const [formData, setFormData] = useState(initialFormState)
+  const [submitting, setSubmitting] = useState(false)
   const { token, isAuthenticated } = useAuth()
+  const toast = useToast()
 
   useEffect(() => {
     if (isAuthenticated && token) {
@@ -125,19 +139,65 @@ function Scheduler() {
   }
 
   const handleSelectEvent = (event) => {
-    console.log('Evento seleccionado:', event)
-    const details = `
-      Tipo: ${event.type}
-      Comentarios: ${event.comments}
-      Ubicación: ${event.location}
-      Email: ${event.email}
-      Fecha: ${event.start.toLocaleString('es-ES')}
-    `
-    alert(details)
+    setSelectedEvent(event)
   }
 
   const handleNavigate = (newDate) => {
     setCurrentDate(newDate)
+  }
+
+  const openNewAppointmentModal = () => {
+    if (!isAuthenticated) {
+      toast.warning('Inicia sesión para crear una cita.')
+      return
+    }
+    setFormData({ ...initialFormState, dateTime: getDefaultFormDate() })
+    setShowNewAppointmentModal(true)
+  }
+
+  const closeNewAppointmentModal = () => setShowNewAppointmentModal(false)
+
+  const handleFormChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleCreateAppointment = async (e) => {
+    e.preventDefault()
+    const { email, dateTime, type, comments, location, status, totalAmount, balanceDue } = formData
+    if (!email?.trim()) {
+      toast.warning('El correo electrónico es requerido.')
+      return
+    }
+    if (!type?.trim()) {
+      toast.warning('El tipo de cita es requerido.')
+      return
+    }
+    const dateISO = new Date(dateTime).toISOString()
+    const total = totalAmount === '' || totalAmount == null ? undefined : Number(totalAmount)
+    const balance = balanceDue === '' || balanceDue == null ? undefined : Number(balanceDue)
+    setSubmitting(true)
+    try {
+      await appointmentService.createAppointment(
+        {
+          email: email.trim(),
+          date: dateISO,
+          type: type.trim(),
+          comments: (comments || '').trim(),
+          location: (location || '').trim(),
+          status: status || 'Tentativo',
+          totalAmount: typeof total === 'number' && !Number.isNaN(total) ? total : undefined,
+          balanceDue: typeof balance === 'number' && !Number.isNaN(balance) ? balance : undefined,
+        },
+        token
+      )
+      toast.success('Cita creada correctamente.')
+      closeNewAppointmentModal()
+      loadAppointments()
+    } catch (err) {
+      toast.error(err.data?.message || err.message || 'Error al crear la cita.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -178,6 +238,16 @@ function Scheduler() {
                 {weekSummary.message}
               </p>
             )}
+            <div className="mt-4 pt-3 border-t border-blue-200">
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                onClick={openNewAppointmentModal}
+              >
+                Programar nueva cita
+              </Button>
+            </div>
           </div>
         )}
       </div>
@@ -244,6 +314,26 @@ function Scheduler() {
           })()}
         </div>
       )}
+
+      <NewAppointmentModal
+        open={showNewAppointmentModal}
+        onClose={closeNewAppointmentModal}
+        formData={formData}
+        onFormChange={handleFormChange}
+        onSubmit={handleCreateAppointment}
+        submitting={submitting}
+      />
+
+      <AppointmentDetailsModal
+        open={!!selectedEvent}
+        onClose={() => setSelectedEvent(null)}
+        event={selectedEvent}
+        token={token}
+        onDeleted={() => {
+          setSelectedEvent(null)
+          loadAppointments()
+        }}
+      />
     </div>
   )
 }
