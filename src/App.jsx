@@ -6,6 +6,7 @@ import Login from "./components/organisms/Login/Login";
 import Register from "./components/organisms/Register/Register";
 import Profile from "./components/organisms/Profile/Profile";
 import Rehearsals from "./components/organisms/Rehearsals/Rehearsals";
+import Hiring from "./components/organisms/Hiring/Hiring";
 import MainLayout from "./components/templates/MainLayout/MainLayout";
 import { useState } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -45,7 +46,10 @@ function AppContent() {
                 </div>
               </div>
             )}
-            {selectedPage === "Ensayos" && <Rehearsals />}
+            {selectedPage === "Misas" && <Rehearsals />}
+            {selectedPage === "Contrataciones" && (
+              <Hiring onNavigate={setSelectedPage} />
+            )}
             {selectedPage === "Mi Perfil" && isAuthenticated && <Profile />}
             {selectedPage === "Login" && !isAuthenticated && (
               <div className="pt-8 px-6">

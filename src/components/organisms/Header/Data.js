@@ -16,7 +16,7 @@ export const headerData = [
   {
     id: "rehearsals",
     href: "#rehearsals",
-    label: "Ensayos",
+    label: "Misas",
     requireAuth: false,
     hideWhenAuthenticated: false,
   },

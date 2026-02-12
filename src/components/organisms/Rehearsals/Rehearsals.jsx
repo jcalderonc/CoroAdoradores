@@ -18,10 +18,11 @@ const Rehearsals = () => {
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Únete a Nuestros Ensayos
+              ¿Te gustaría conocernos?
             </h1>
             <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto">
-              Cada sábado nos reunimos en la Iglesia San Rafael para adorar a través de la música
+              Nuestra misa asignada es los sábados a las 6:00 PM en San Rafael.
+              Ven y conócenos.
             </p>
           </div>
         </div>
@@ -47,7 +48,7 @@ const Rehearsals = () => {
             {/* Schedule Info */}
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                Horario de Ensayos
+                Horario de Misa
               </h2>
               <div className="space-y-6">
                 <div className="flex items-start space-x-4">
@@ -186,10 +187,11 @@ const Rehearsals = () => {
       <section className="py-16 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            ¿Listo para Unirte?
+            ¿Te interesa unirte al coro?
           </h2>
           <p className="text-xl mb-8 text-orange-100">
-            No necesitas experiencia previa, solo el deseo de adorar a través de la música
+            Es necesario conocer de música y pasar por una evaluación para formar
+            parte del coro.
           </p>
           
           <ButtonGroup spacing="lg">
